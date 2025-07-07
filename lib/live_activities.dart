@@ -3,6 +3,7 @@ import 'package:live_activities/live_activities_platform_interface.dart';
 import 'package:live_activities/models/activity_update.dart';
 import 'package:live_activities/models/alert_config.dart';
 import 'package:live_activities/models/live_activity_state.dart';
+import 'package:live_activities/models/live_activities_provider.dart';
 import 'package:live_activities/models/url_scheme_data.dart';
 import 'package:live_activities/services/app_groups_file_service.dart';
 
@@ -119,6 +120,17 @@ class LiveActivities {
   /// Checks if iOS 17.2+ which allows push start for live activities.
   Future<bool> allowsPushStart() {
     return LiveActivitiesPlatform.instance.allowsPushStart();
+  }
+
+  /// Get the Live Activities provider type for the current platform.
+  /// Returns the provider enum indicating which underlying technology is being used:
+  /// - iOS Live Activities for iOS 16.1+
+  /// - Android Enhanced Live Updates for Android 12+ (API 31+)
+  /// - Android Basic Live Updates for Android 8.0-11 (API 26-30) 
+  /// - Android RemoteViews for older Android versions
+  /// Returns null if Live Activities are not supported on the current platform.
+  Future<LiveActivitiesProvider?> getActivitiesProvider() {
+    return LiveActivitiesPlatform.instance.getActivitiesProvider();
   }
 
   /// Get a stream of url scheme data.

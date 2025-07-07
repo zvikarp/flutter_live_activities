@@ -2,6 +2,7 @@ import 'package:live_activities/live_activities_method_channel.dart';
 import 'package:live_activities/models/activity_update.dart';
 import 'package:live_activities/models/alert_config.dart';
 import 'package:live_activities/models/live_activity_state.dart';
+import 'package:live_activities/models/live_activities_provider.dart';
 import 'package:live_activities/models/url_scheme_data.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -81,6 +82,11 @@ abstract class LiveActivitiesPlatform extends PlatformInterface {
   Future<bool> allowsPushStart() {
     throw UnimplementedError(
         'supportsStartActivities() has not been implemented.');
+  }
+
+  Future<LiveActivitiesProvider?> getActivitiesProvider() {
+    throw UnimplementedError(
+        'getActivitiesProvider() has not been implemented.');
   }
 
   Stream<UrlSchemeData> urlSchemeStream() {

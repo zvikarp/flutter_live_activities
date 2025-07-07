@@ -45,6 +45,18 @@ open class LiveActivityManager(private val context: Context) {
     }
 
     /**
+     * Get the provider type for the current Android device
+     */
+    fun getProvider(): String? {
+        return when {
+            Build.VERSION.SDK_INT >= ENHANCED_LIVE_UPDATES_MIN_API -> "androidEnhancedLiveUpdate"
+            Build.VERSION.SDK_INT >= LIVE_UPDATES_MIN_API -> "androidBasicLiveUpdate"
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> "androidRemoteView"
+            else -> null
+        }
+    }
+
+    /**
      * Build a notification optimized for live updates when supported
      */
     private suspend fun buildLiveUpdateNotification(

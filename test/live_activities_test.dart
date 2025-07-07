@@ -5,6 +5,7 @@ import 'package:live_activities/live_activities_method_channel.dart';
 import 'package:live_activities/models/activity_update.dart';
 import 'package:live_activities/models/alert_config.dart';
 import 'package:live_activities/models/live_activity_state.dart';
+import 'package:live_activities/models/live_activities_provider.dart';
 import 'package:live_activities/models/url_scheme_data.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -106,6 +107,11 @@ class MockLiveActivitiesPlatform
   }
 
   @override
+  Future<LiveActivitiesProvider?> getActivitiesProvider() {
+    return Future.value(LiveActivitiesProvider.iosLiveActivity);
+  }
+
+  @override
   Stream<String> get pushToStartTokenUpdateStream {
     return Stream.value('PUSH_TO_START_TOKEN');
   }
@@ -204,6 +210,10 @@ void main() {
 
   test('allowsPushStart', () async {
     expect(await liveActivitiesPlugin.allowsPushStart(), true);
+  });
+
+  test('getActivitiesProvider', () async {
+    expect(await liveActivitiesPlugin.getActivitiesProvider(), LiveActivitiesProvider.iosLiveActivity);
   });
 
   test('pushToStartTokenUpdateStream', () async {

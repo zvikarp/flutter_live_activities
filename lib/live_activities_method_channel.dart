@@ -6,6 +6,7 @@ import 'package:live_activities/live_activities_platform_interface.dart';
 import 'package:live_activities/models/activity_update.dart';
 import 'package:live_activities/models/alert_config.dart';
 import 'package:live_activities/models/live_activity_state.dart';
+import 'package:live_activities/models/live_activities_provider.dart';
 import 'package:live_activities/models/url_scheme_data.dart';
 
 /// An implementation of [LiveActivitiesPlatform] that uses method channels.
@@ -123,6 +124,18 @@ class MethodChannelLiveActivities extends LiveActivitiesPlatform {
 
     final result = await methodChannel.invokeMethod<bool>('allowsPushStart');
     return result ?? false;
+  }
+
+  @override
+  Future<LiveActivitiesProvider?> getActivitiesProvider() async {
+    final result = await methodChannel.invokeMethod<String>('getActivitiesProvider');
+    if (result == null) return null;
+    
+    try {
+      return LiveActivitiesProvider.values.byName(result);
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
