@@ -136,7 +136,7 @@ class CustomLiveActivityManager(context: Context) :
             team2ImageUrl,
         )
 
-        return notification
+        val notificationBuilder = notification
             .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .setContentTitle("$team1Name vs $team2Name")
@@ -148,6 +148,19 @@ class CustomLiveActivityManager(context: Context) :
             .setPriority(Notification.PRIORITY_LOW)
             .setCategory(Notification.CATEGORY_EVENT)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
-            .build()
+
+        // Apply live updates optimizations for supported devices
+        if (supportsLiveUpdates()) {
+            notificationBuilder
+                .setOnlyAlertOnce(true) // Only alert on creation, not updates
+                .setSilent(true) // Silent updates for smoother experience
+            
+            // Enhanced features for newer Android versions
+            if (supportsEnhancedLiveUpdates()) {
+                notificationBuilder.setAllowSystemGeneratedContextualActions(false)
+            }
+        }
+
+        return notificationBuilder.build()
     }
 }

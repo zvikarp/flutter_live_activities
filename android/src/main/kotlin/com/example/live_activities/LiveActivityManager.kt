@@ -12,7 +12,14 @@ import java.security.MessageDigest
 
 open class LiveActivityManager(private val context: Context) {
     private val liveActivitiesMap = mutableMapOf<Int, Long>()
+    private val cachedNotifications = mutableMapOf<Int, Notification>()
     private lateinit var channelName: String
+
+    companion object {
+        // Android API level where live updates are supported efficiently
+        private const val LIVE_UPDATES_MIN_API = 26 // Android 8.0 (API 26)
+        private const val ENHANCED_LIVE_UPDATES_MIN_API = 31 // Android 12 (API 31)
+    }
 
     open suspend fun buildNotification(
         notification: Notification.Builder,
@@ -20,6 +27,48 @@ open class LiveActivityManager(private val context: Context) {
         data: Map<String, Any>
     ): Notification {
         throw NotImplementedError("You must implement buildNotification in your subclass")
+    }
+
+    /**
+     * Check if the device supports Android live updates for notifications
+     * Live updates provide more efficient notification updates for frequently changing content
+     */
+    fun supportsLiveUpdates(): Boolean {
+        return Build.VERSION.SDK_INT >= LIVE_UPDATES_MIN_API
+    }
+
+    /**
+     * Check if the device supports enhanced live updates with better performance
+     */
+    fun supportsEnhancedLiveUpdates(): Boolean {
+        return Build.VERSION.SDK_INT >= ENHANCED_LIVE_UPDATES_MIN_API
+    }
+
+    /**
+     * Build a notification optimized for live updates when supported
+     */
+    private suspend fun buildLiveUpdateNotification(
+        notification: Notification.Builder,
+        event: String,
+        data: Map<String, Any>,
+        activityId: Int
+    ): Notification {
+        val builtNotification = buildNotification(notification, event, data)
+        
+        // Configure for live updates on supported devices
+        if (supportsLiveUpdates()) {
+            notification
+                .setOnlyAlertOnce(true) // Don't alert on updates, only on creation
+                .setOngoing(true) // Keep notification persistent
+                .setSilent(true) // Silent updates for better UX
+            
+            if (supportsEnhancedLiveUpdates()) {
+                // Enhanced features for Android 12+
+                notification.setAllowSystemGeneratedContextualActions(false)
+            }
+        }
+        
+        return builtNotification
     }
 
     private fun createNotificationChannel(
@@ -85,13 +134,29 @@ open class LiveActivityManager(private val context: Context) {
             NotificationManagerCompat.from(context).areNotificationsEnabled()
 
         if (areNotificationsEnabled) {
-            notificationManager.notify(
-                activityId, buildNotification(
+            val notification = if (supportsLiveUpdates()) {
+                Log.d("LiveActivityManager", "Creating live activity with live updates support for ID: $id")
+                buildLiveUpdateNotification(
+                    Notification.Builder(context, channelName),
+                    "create",
+                    data,
+                    activityId
+                )
+            } else {
+                Log.d("LiveActivityManager", "Creating live activity with traditional RemoteViews for ID: $id")
+                buildNotification(
                     Notification.Builder(context, channelName),
                     "create",
                     data,
                 )
-            )
+            }
+            
+            notificationManager.notify(activityId, notification)
+            
+            // Cache notification for efficient updates on live update supported devices
+            if (supportsLiveUpdates()) {
+                cachedNotifications[activityId] = notification
+            }
         } else {
             Log.w(
                 "LiveActivityManager",
@@ -128,13 +193,30 @@ open class LiveActivityManager(private val context: Context) {
             NotificationManagerCompat.from(context).areNotificationsEnabled()
 
         if (areNotificationsEnabled) {
-            notificationManager.notify(
-                activityId, buildNotification(
+            val notification = if (supportsLiveUpdates()) {
+                Log.d("LiveActivityManager", "Updating live activity with live updates for ID: $id")
+                // Use live updates for more efficient notification updates
+                buildLiveUpdateNotification(
+                    Notification.Builder(context, channelName),
+                    "update",
+                    data,
+                    activityId
+                )
+            } else {
+                Log.d("LiveActivityManager", "Updating live activity with traditional method for ID: $id")
+                buildNotification(
                     Notification.Builder(context, channelName),
                     "update",
                     data
                 )
-            )
+            }
+            
+            notificationManager.notify(activityId, notification)
+            
+            // Update cached notification for future efficient updates
+            if (supportsLiveUpdates()) {
+                cachedNotifications[activityId] = notification
+            }
         } else {
             Log.w(
                 "LiveActivityManager",
@@ -159,6 +241,11 @@ open class LiveActivityManager(private val context: Context) {
 
         notificationManager.cancel(activityId)
         liveActivitiesMap.remove(activityId)
+        
+        // Clean up cached notification if using live updates
+        if (supportsLiveUpdates()) {
+            cachedNotifications.remove(activityId)
+        }
     }
 
     fun endAllActivities(data: Map<String, Any>) {
@@ -170,6 +257,11 @@ open class LiveActivityManager(private val context: Context) {
         for (activityId in liveActivitiesMap.keys.toList()) {
             notificationManager.cancel(activityId)
             liveActivitiesMap.remove(activityId)
+        }
+        
+        // Clean up all cached notifications if using live updates
+        if (supportsLiveUpdates()) {
+            cachedNotifications.clear()
         }
     }
 
