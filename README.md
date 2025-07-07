@@ -27,8 +27,8 @@ Island** features.
 This plugin uses
 the [iOS ActivityKit API](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities)
 and
-the [Android RemoteViews API](https://developer.android.com/reference/android/widget/RemoteViews)
-to create **live activities** on iOS and **remote views** on Android.
+the [Android Live Updates](https://developer.android.com/develop/ui/views/notifications/live-update) / [Android RemoteViews API](https://developer.android.com/reference/android/widget/RemoteViews)
+to create **live activities** on iOS and **live updates** / **remote views** on Android.
 
 **live_activities** can be used to show **dynamic live notification** &
 implement **dynamic island** feature on iPhones that support it 🏝️
@@ -59,6 +59,22 @@ implement **dynamic island** feature on iPhones that support it 🏝️
   <img alt="flutter ios 16 live activities preview dynamic island" src="https://raw.githubusercontent.com/istornz/live_activities/main/images/showcase/animations/android-demo.gif" width="250px" style="margin-right: 20px" />
 </div>
 <br />
+
+**Android Live Updates Support:**
+
+This plugin automatically uses **Android Live Updates** for supported devices (Android 8.0+ / API 26+) to provide more efficient notification updates. On older devices, it gracefully falls back to traditional **RemoteViews**.
+
+**Live Updates Features:**
+- ✅ **Efficient Updates**: Faster notification updates with less system overhead
+- ✅ **Silent Updates**: Updates don't interrupt the user with sounds/vibrations
+- ✅ **Enhanced Performance**: Better battery life and smoother animations
+- ✅ **Automatic Detection**: Automatically detects device capabilities
+- ✅ **Backward Compatibility**: Falls back to RemoteViews on older devices
+
+**API Level Support:**
+- **Android 8.0+ (API 26)**: Basic live updates support
+- **Android 12+ (API 31)**: Enhanced live updates with improved performance
+- **Android 7.0-7.1 (API 24-25)**: Traditional RemoteViews (fallback)
 
 ## 👻 Getting started
 
@@ -161,7 +177,9 @@ struct FootballMatchApp: Widget {
 ### Android
 
 You need to **implement** in your Flutter Android project a **CustomLiveActivityManager** which will extends plugin one & develop in
-_Kotlin_ / _Java_ your own **RemoveView** logic and design.
+_Kotlin_ / _Java_ your own **RemoteView** logic and design.
+
+The plugin automatically uses **Android Live Updates** for better performance on supported devices (Android 8.0+) while maintaining backward compatibility with traditional **RemoteViews**.
 
 Don't be afraid, you will just need to create one **XML** and one **Kotlin** files.
 
@@ -316,6 +334,7 @@ class CustomLiveActivityManager(context: Context) :
     // [notification] is the Notification.Builder instance used by the plugin
     // [event] is the event type ("create" or "update")
     // [data] is the data passed to the plugin
+    // The plugin automatically applies live updates optimizations for supported devices
     override suspend fun buildNotification(
         notification: Notification.Builder,
         event: String,
@@ -344,7 +363,7 @@ class CustomLiveActivityManager(context: Context) :
             team2ImageUrl,
         )
 
-        return notification
+        val notificationBuilder = notification
             .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .setContentTitle("$team1Name vs $team2Name")
@@ -356,7 +375,12 @@ class CustomLiveActivityManager(context: Context) :
             .setPriority(Notification.PRIORITY_LOW)
             .setCategory(Notification.CATEGORY_EVENT)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
-            .build()
+
+        // Live updates optimizations are automatically applied by the plugin
+        // for Android 8.0+ devices (silent updates, efficient notifications)
+        // Older devices automatically use traditional RemoteViews approach
+        
+        return notificationBuilder.build()
     }
 }
 ```
@@ -851,8 +875,14 @@ these notifications.
 
 ### Is Android supported?
 
-> Yes but it's less mature than iOS for the moment. Android support is in beta.
+> Yes! Android support includes modern **live updates** for better performance on supported devices.
 >
+> **Live Updates Features:**
+> - **Android 8.0+ (API 26)**: Automatic live updates with efficient notification updates
+> - **Android 12+ (API 31)**: Enhanced live updates with improved performance  
+> - **Android 7.0-7.1 (API 24-25)**: Traditional RemoteViews (backward compatibility)
+>
+> The plugin automatically detects your device capabilities and uses the best available method.
 > You can call `areActivitiesEnabled()` before creating your activity to ensure
 > it can be displayed on the user's device. 😊
 

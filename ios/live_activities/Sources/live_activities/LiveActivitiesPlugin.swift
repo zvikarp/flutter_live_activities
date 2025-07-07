@@ -215,6 +215,14 @@ public class LiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
             result(FlutterError(code: "WRONG_ARGS", message: "argument are not valid, check if 'data', 'activityId' is valid", details: nil))
           }
           break
+        case "getActivitiesProvider":
+          // iOS Live Activities are available on iOS 16.1+
+          guard #available(iOS 16.1, *), !ProcessInfo.processInfo.isiOSAppOnMac else {
+              result(nil)
+              return
+          }
+          result("iosLiveActivity")
+          break
         default:
           break
       }

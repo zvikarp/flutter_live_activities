@@ -82,6 +82,11 @@ class LiveActivitiesPlugin : FlutterPlugin, MethodCallHandler {
                     result.success(enabled)
                 }
 
+                "getActivitiesProvider" -> {
+                    val provider = liveActivityManager.getProvider()
+                    result.success(provider)
+                }
+
                 else -> {
                     result.notImplemented()
                 }

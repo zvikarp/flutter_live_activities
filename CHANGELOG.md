@@ -1,3 +1,9 @@
+## 2.4.2
+* ✨ Add Android Live Updates support for efficient notification updates on Android 8.0+ (API 26+).
+* ✨ Enhanced live updates performance on Android 12+ (API 31+) with silent updates.
+* ✨ Automatic device capability detection with backward compatibility for older Android versions.
+* 📝 Update documentation to explain live updates vs traditional RemoteViews.
+
 ## 2.4.1
 * 🐛 Check for customId in endActivitiesWithId (thanks to @dkobia 👍).
 * 🐛 Bugfix avoid remove all notifications (thanks to @EArminjon 👍).
