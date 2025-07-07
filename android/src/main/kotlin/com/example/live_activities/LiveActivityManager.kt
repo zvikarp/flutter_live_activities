@@ -53,8 +53,6 @@ open class LiveActivityManager(private val context: Context) {
         data: Map<String, Any>,
         activityId: Int
     ): Notification {
-        val builtNotification = buildNotification(notification, event, data)
-        
         // Configure for live updates on supported devices
         if (supportsLiveUpdates()) {
             notification
@@ -68,7 +66,7 @@ open class LiveActivityManager(private val context: Context) {
             }
         }
         
-        return builtNotification
+        return buildNotification(notification, event, data)
     }
 
     private fun createNotificationChannel(
